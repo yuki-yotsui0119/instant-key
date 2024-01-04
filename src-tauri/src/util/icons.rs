@@ -9,10 +9,12 @@ use std::{
 pub fn convert_all_app_icons_to_png() {
     let username = std::env::var("USERNAME").unwrap_or_default();
     let user_path = format!("C:\\Users\\{}\\AppData\\Local", username);
+    let programs_path = format!("C:\\Users\\{}\\AppData\\Local\\Programs", username);
 
     let search_locations = vec![
         PathBuf::from("C:\\Program Files"),
         PathBuf::from("C:\\Program Files (x86)"),
+        PathBuf::from(&programs_path),
         PathBuf::from(&user_path),
     ];
 
