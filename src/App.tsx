@@ -133,71 +133,50 @@ const Keyboard = () => {
   console.log(keyData);
 
   return (
-    <div className="wrapper">
-      <div className="keyboard top">    
+    <div className="keyboard">
+      <div className="keyboadr-inner top">    
+      {
+          Array.from(keyData.top).map(([key, value]) => <KeyBody keyData={value} keyLabel={key} />)
+        }
+      </div>
+      <div className="keyboadr-inner middle">
+      {
+          Array.from(keyData.middle).map(([key, value]) => <KeyBody keyData={value} keyLabel={key} />)
+        }
+      </div>
+      <div className="keyboadr-inner bottom">
         {
-          Array.from(keyData.top).map(([key, value]) => {
-            return (
-              <>
-                <button className="key" key={key}>
-                  {key}
-                  {
-                    value?.imageSrc && (
-                      <img src={value.imageSrc} alt={key} />
-                    )
-                  }
-                </button>
-                <div>
-                  {value?.title}
-                </div>
-              </>
-            );
-          })
-        }
-      </div>
-      <div className="keyboard middle">
-      {
-          Array.from(keyData.middle).map(([key, value]) => {
-            return (
-              <>
-                <button className="key" key={key}>
-                  {key}
-                  {
-                    value?.imageSrc && (
-                      <img src={value.imageSrc} alt={key} />
-                    )
-                  }
-                </button>
-                <div>
-                  {value?.title}
-                </div>
-              </>
-            );
-          })
-        }
-      </div>
-      <div className="keyboard bottom">
-      {
-          Array.from(keyData.bottom).map(([key, value]) => {
-            return (
-              <>
-                <button className="key" key={key}>
-                  {key}
-                  {
-                    value?.imagePath && (
-                      <img src={value.imagePath} alt={key} />
-                    )
-                  }
-                </button>
-                <div>
-                  {value?.title}
-                </div>
-              </>
-            );
-          })
+          Array.from(keyData.bottom).map(([key, value]) => <KeyBody keyData={value} keyLabel={key} />)
         }
       </div>
     </div>
   );
 };
 
+type KeyProps = {
+  keyLabel: string;
+  keyData: KeyWithImagePath | null
+}
+
+const KeyBody = ({ keyLabel, keyData }: KeyProps) => {
+  return (
+    <div>
+      <div className="key">
+        <div className="key-cotnent">
+          <div className="key-label">
+            {keyLabel}
+          </div>
+          {
+            keyData?.imageSrc && (
+              <img src={keyData.imageSrc} alt={keyLabel} />
+            )
+          }
+        </div>
+      </div>
+      <div className="key-title">
+        {keyData?.title}
+      </div>
+    </div>
+  )
+
+}

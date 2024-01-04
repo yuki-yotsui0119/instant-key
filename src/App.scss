@@ -1,90 +1,141 @@
-@import url("https://fonts.googleapis.com/css2?family=Fira+Code&family=Mynerve&family=Pacifico&family=Source+Sans+Pro&display=swap");
+@use "sass:math";
 
-* {
+body {
+  margin: 0;
+}
+
+.keyboard {
+  --radius: 4vmin;
+  --red: rgb(255, 100, 100);
+  --green: rgb(100, 200, 100);
+  --blue: rgb(100, 100, 255);
+  
+  background-color: #111;
+  padding: 10px;
+  border-radius: var(--radius);
+  box-shadow: 0 4vmin #0b0b0b, -2vmin 5vmin 4vmin #0a0a0a;
+  position: relative;
   box-sizing: border-box;
-  transition: all 0.3s ease-out;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-
-
-
-.app-wrapper {
-  display: flex;
-  justify-content: center;
-}
-
-.wrapper {
-  background-color: white;
-  height: 80%;
-  width: 80%;
-
-  .keyboard {
+  
+  .keyboadr-inner {
     display: flex;
-    &.top {
-
-    }
+    gap: 1vmin;
+    padding: 0.75vmin 1vmin 1vmin;
+    overflow: hidden;
+    background-color: #222;
+    border-radius: calc(var(--radius) * 0.5);
+    box-shadow: 0 0.5vmin rgba(0, 0, 0, 1) inset;
+    width: fit-content;
+    margin-top: 4px;
+    
     &.middle {
       margin-left: 24px;
     }
     &.bottom {
       margin-left: 72px;
     }
+
+
     .key {
-      height: 90px;
-      width: 90px;
+      width: 18vmin;
+      height: 17vmin;
+      padding: 0.6vmin 0.6vmin 0.9vmin;
+      top: 0.5vmin;
+      position: relative;
+      overflow: hidden;
+      border-radius: calc(var(--radius) * 0.5);
+      transform: translate3d(0, 0, 0); // safari fix lol
+      --delay: 0;
+      margin-left: 2px;
+      margin-right: 2px;
+
+
+      &:before {
+        content: '';
+        width: 400vmin;
+        height: 400vmin;
+        position: absolute;
+        top: 150%;
+        left: 150%;
+        transform: translate(-50%, -50%);
+        background: conic-gradient(var(--blue), var(--red), var(--green), var(--blue));
+
+        @keyframes spin {
+          from { transform: translate(-50%, -50%) rotate(0deg); }
+          to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+      }
+
+      .key-cotnent {
+        width: 100%;
+        height: 100%;
+        background-color: #111;
+        position: relative;
+        border-radius: calc(var(--radius) * 0.4);
+        font-size: 5vmin; 
+        top: -0.3vmin;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #FFF;
+        z-index: 1;
+        cursor: pointer;
+        user-select: none;
+        box-shadow: 0 0.6vmin rgba(0, 0, 0, 0.6);
+        transition: top 0.1s ease-in-out, box-shadow 0.1s ease-in-out, background-color 0.1s ease-in-out;
+        
+        &:active {
+          top: 0vmin;
+          box-shadow: 0 0.3vmin rgba(0, 0, 0, 0.6);
+          background-color: rgba(#111, 0.9);
+        }
+        
+        @keyframes color {
+          0% { color: var(--blue); }
+          33% { color: var(--green); }
+          66% { color: var(--red); }
+          100% { color: var(--blue); }
+        }
+
+        .key-label {
+          display: block;
+          margin: auto; // 中央配置
+          position: absolute;
+          top: 8px; // テキストの位置
+          left: 8px; // テキストを右下に配置
+          
+        }
+
+        img {
+          width: 24px; // 画像をコンテナに合わせる
+          display: block;
+          margin: auto; // 中央配置
+          position: absolute;
+          bottom: 8px; // テキストの位置
+          right: 8px; // テキストを右下に配置
+        }
+      }
+    }
+
+    .key-title {
+      width: 18vmin;
+      align-items: center;
+      color: #FFF;
+      text-align: center;
+      font-size: 3vmin;
+      margin: 0 auto;
+      margin-top: 4px;
+      color: lightgray;
+
+      overflow: hidden;
+      display: -webkit-box;
+      text-overflow: ellipsis;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      /* ブラウザがサポートしていない場合のフェールセーフ */
+      height: 45px;
+
+      overflow-wrap: break-word;
     }
   }
-
-  button {
-    font-family: "Source Sans Pro", sans-serif;
-    backdrop-filter: blur(30px);
-    border: 0;
-    margin: 5px;
-    border-radius: 10px;
-    background: #fad0c4;
-    box-shadow: 5px 5px 6px #dab5ab, -4px -4px 6px rgba(255, 255, 255, 0.4);
-    color: transparent;
-    font-size: 1.8ch;
-    -webkit-background-clip: text;
-    -moz-background-clip: text;
-    background-clip: text;
-    text-shadow: -1px -1px 2px rgba(240, 240, 240, 0.4),
-      1px 1px 0px rgba(0, 0, 0, 0.15);
-
-    &:hover {
-      box-shadow: 5px 5px 6px rgba(10, 10, 10, 0.4),
-        -5px -5px 6px rgba(255, 255, 255, 0.5);
-    }
-
-    &:active {
-      box-shadow: -1px -1px 6px rgba(10, 10, 10, 0.1),
-        1px 1px 6px rgba(255, 255, 255, 0.1);
-    }
-  }
-}
-
-h6 {
-  font-family: "Fira Code", monospace;
-
-  a {
-    text-decoration: none;
-    font-size: 2.5ch;
-    color: #111;
-    opacity: 0.5;
-    text-shadow: 0px 0px 4px rgba(0, 0, 0, 0.4);
-
-    &:hover {
-      opacity: 1;
-    }
-  }
-}
-
-kbd {
-  background-color: rgba(0, 0, 0, 0.4);
-  border-radius: 2px;
-  padding: 3px;
-  color: #fff;
 }

@@ -48,16 +48,15 @@ fn main() {
 
             Ok(())
         })
-        .on_window_event(|event| match event.event() {
-            tauri::WindowEvent::Focused(is_focused) => {
-                // detect click outside of the focused window and hide the app
-                if !is_focused {
-                    event.window().hide().unwrap();
-                }
-            }
-            _ => {}
-        })
-        // .manage(ns_panel::State::default())
+        // .on_window_event(|event| match event.event() {
+        //     tauri::WindowEvent::Focused(is_focused) => {
+        //         // detect click outside of the focused window and hide the app
+        //         if !is_focused {
+        //             event.window().hide().unwrap();
+        //         }
+        //     }
+        //     _ => {}
+        // })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

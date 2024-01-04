@@ -60,10 +60,10 @@
     },
     "windows": [
       {
-        "fullscreen": true,
         "resizable": false,
         "title": "",
-      
+        "width": 1060,
+        "height": 480,
         "decorations": false,
         "transparent": true,
         "center": true,
