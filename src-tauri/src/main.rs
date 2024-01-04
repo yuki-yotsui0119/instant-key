@@ -3,23 +3,20 @@
 
 mod util;
 
-use util::{convert_all_app_icons_to_png};
-use window_vibrancy::{apply_acrylic};
+use util::{convert_all_app_icons_to_png, create_preferences_if_missing, get_all_config_data, execute_command};
+use window_vibrancy::apply_acrylic;
 use tauri::{
     Manager, GlobalShortcutManager
 };
 
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
 fn main() {
     convert_all_app_icons_to_png();
-    // create_preferences_if_missing();
+    create_preferences_if_missing();
+    get_all_config_data();
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
+            get_all_config_data,
+            execute_command,
             // open_command,
             // get_icon,
             // handle_input,
@@ -34,7 +31,6 @@ fn main() {
             #[cfg(target_os = "windows")]
             apply_acrylic(&window, Some((18, 18, 18, 125))).expect("Unsupported platform! 'apply_blur' is only supported on Windows");
             window.hide().unwrap();
-
             window.center().unwrap();
 
             // ショートカット"Ctrl+Shift+Space"を登録
@@ -50,9 +46,16 @@ fn main() {
                 })
                 .expect("failed to register global shortcut");
 
-
-
             Ok(())
+        })
+        .on_window_event(|event| match event.event() {
+            tauri::WindowEvent::Focused(is_focused) => {
+                // detect click outside of the focused window and hide the app
+                if !is_focused {
+                    event.window().hide().unwrap();
+                }
+            }
+            _ => {}
         })
         // .manage(ns_panel::State::default())
         .run(tauri::generate_context!())

@@ -1,35 +1,41 @@
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use std::fs;
+use ts_rs::TS;
 
-#[derive(Serialize, Deserialize)]
-struct Theme {
-    primary_bg_color: String,
-    secondary_bg_color: String,
-    primary_text_color: String,
-    secondary_text_color: String,
-    primary_accent_color: String,
-    secondary_accent_color: String,
-    highlight_overlay: String,
-    dark_overlay: String,
+// Typeを表す列挙型
+#[derive(Serialize, Deserialize, Debug, TS, PartialEq)]
+#[ts(export)]
+pub enum KeyType {
+    Command,
+    Explorer,
 }
 
-impl Default for Theme {
-    fn default() -> Self {
-        Self {
-            primary_bg_color: String::from("rgba(20, 20, 30, 0.6)"),
-            secondary_bg_color: String::from("rgba(84, 101, 115, 0.6)"),
-            primary_text_color: String::from("#FFFFFF"),
-            secondary_text_color: String::from("#878787"),
-            primary_accent_color: String::from("#556CE5"),
-            secondary_accent_color: String::from("#48A5FF"),
-            highlight_overlay: String::from("rgba(255, 255, 255, 0.1)"),
-            dark_overlay: String::from("rgba(0, 0, 0, 0.1)"),
-        }
-    }
+// JSONデータの構造を表す構造体
+#[derive(Serialize, Deserialize, Debug, TS)]
+#[ts(export)]
+pub struct Key {
+    pub key: String,
+    pub title: String,
+    pub description: String,
+    #[serde(rename = "keyType")]
+    pub key_type: KeyType,
+    pub path: Option<String>,
+    pub command: Option<String>, // コマンドは必ずしも存在しないのでOption型を使用
+    #[serde(rename = "imagePath")]
+    pub image_path: Option<String>
 }
 
-#[derive(Serialize, Deserialize)]
+// 複数のKeyを持つことができる外側の構造体
+#[derive(Serialize, Deserialize, Debug, TS)]
+#[ts(export)]
+pub struct Config {
+    #[serde(default)] // デフォルト値を設定するためのアトリビュート
+    keys: Vec<Key>,
+}
+
+#[derive(Serialize, Deserialize, TS)]
+#[ts(export)]
 struct Preferences {
     shortcut: String,
     launch_on_login: bool,
@@ -39,7 +45,7 @@ struct Preferences {
 pub fn create_preferences_if_missing() {
     if let Some(proj_dirs) = ProjectDirs::from("", "", "instant-key") {
         let preferences_path = proj_dirs.config_dir().join("preferences.json");
-        let theme_path = proj_dirs.config_dir().join("theme.json");
+        let config_path = proj_dirs.config_dir().join("config.json");
         if !preferences_path.exists() {
             let preference = Preferences {
                 shortcut: String::from("Command+Shift+G"),
@@ -49,10 +55,39 @@ pub fn create_preferences_if_missing() {
             let preference_text = serde_json::to_string(&preference).unwrap();
             fs::write(preferences_path, &preference_text).unwrap();
         }
-        if !theme_path.exists() {
-            let theme = Theme::default();
-            let theme_text = serde_json::to_string(&theme).unwrap();
-            fs::write(theme_path, &theme_text).unwrap();
+        if !config_path.exists() {
+            let mut config = Config { keys: Vec::new() };
+            let config_text = serde_json::to_string(&config).unwrap();
+            fs::write(config_path, &config_text).unwrap();
         }
     }
+}
+
+pub fn get_config_data(key: &str) -> Option<Key> {
+    if let Some(proj_dirs) = ProjectDirs::from("", "", "instant-key") {
+        let config_path = proj_dirs.config_dir().join("config.json");
+        if config_path.exists() {
+            let config_text = fs::read_to_string(config_path).unwrap();
+            let config: Config = serde_json::from_str(&config_text).unwrap();
+            for key_data in config.keys {
+                if key_data.key == key {
+                    return Some(key_data);
+                }
+            }
+        }
+    }
+    return None;
+}
+
+#[tauri::command]
+pub fn get_all_config_data() -> Vec<Key> {
+    if let Some(proj_dirs) = ProjectDirs::from("", "", "instant-key") {
+        let config_path = proj_dirs.config_dir().join("config.json");
+        if config_path.exists() {
+            let config_text = fs::read_to_string(config_path).unwrap();
+            let config: Config = serde_json::from_str(&config_text).unwrap();
+            return config.keys;
+        }
+    }
+    return Vec::new();
 }

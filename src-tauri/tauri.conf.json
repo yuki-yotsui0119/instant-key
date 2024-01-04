@@ -24,12 +24,29 @@
         "setSize": true,
         "center": true,
         "setSkipTaskbar": true
+      },
+      "fs": {
+        "all": true,
+        "scope": [
+          "$APPDATA/**",
+          "$APPDATA/*",
+          "$APPDATA/",
+          "$APPDATA"
+        ]
+      },
+      "shell": {
+        "execute": true
+      },
+      "protocol": {
+        "all": true,
+        "asset": true,
+        "assetScope": ["**"]
       }
     },
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "com.tauri.dev",
+      "identifier": "instant-key",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
@@ -39,14 +56,14 @@
       ]
     },
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost"
     },
     "windows": [
       {
-        "fullscreen": false,
+        "fullscreen": true,
         "resizable": false,
         "title": "",
-        "alwaysOnTop": true,
+      
         "decorations": false,
         "transparent": true,
         "center": true,

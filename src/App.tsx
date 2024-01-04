@@ -1,53 +1,203 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/tauri";
-import "./App.css";
+import { convertFileSrc, invoke } from "@tauri-apps/api/tauri";
+import { readTextFile } from "@tauri-apps/api/fs";
+import { appDataDir, join } from "@tauri-apps/api/path";
+
+// css
+import "./App.scss";
+import { paths, preferences } from "./cache";
+import { Key } from "../src-tauri/bindings/Key";
+import { appWindow } from "@tauri-apps/api/window";
+import { Config } from "../src-tauri/bindings/Config";
+
+type KeyWithImagePath = Key & {
+  imageSrc?: string | null;
+};
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
-
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    setGreetMsg(await invoke("greet", { name }));
-  }
 
   return (
-    <div className="container">
-      <h1>Welcome to Tauri!</h1>
-
-      <div className="row">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-
-      <p>{greetMsg}</p>
+    <div className="app-wrapper">
+      <Keyboard />
     </div>
   );
 }
 
 export default App;
+
+
+const Keyboard = () => {
+  const [keyDatas, setKeyDatas] = useState<KeyWithImagePath[]>([]);
+
+  const topRow = [
+    'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'
+  ];
+  const middleRow = [
+    'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'
+  ];
+
+  const bottomRow = [
+    'Z', 'X', 'C', 'V', 'B', 'N', 'M'
+  ];
+
+  const fetchKeyDatas = async () => {
+    const getKeyDatas: Config = await readTextFile(
+      await join(paths.get('appDataDirPath'), "config", `config.json`)
+    ).then(data => JSON.parse(data));
+
+    const result = await Promise.all(getKeyDatas.keys.map(async (key: KeyWithImagePath)=>{
+      if (key.imagePath) {
+        key.imageSrc = convertFileSrc(key.imagePath);
+      }
+      return key;
+    }));
+
+    setKeyDatas(result || []);
+    // keyDatas.splice(0, keyDatas.length, ...(getKeyDatas.keys || []));
+  };
+    
+  useEffect(() => {
+    (async () => {
+      // get and set values
+      paths.set('appDataDirPath', await appDataDir());
+      await fetchKeyDatas();    
+    })();
+
+    const handleKeyDown = async (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        appWindow.hide();
+      }
+
+      if (event.key.match(/^[a-zA-Z]$/)) {
+        if (event.key) {
+          // invokeとappWindowのロジックをここに移動
+          await invoke('execute_command', {key: event.key.toUpperCase()});
+          appWindow.hide();
+        }
+      }
+    };
+
+    // Event listenerを追加
+    document.addEventListener('keydown', handleKeyDown);
+
+    // Event listenerをクリーンアップ
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [])
+
+  const keyData: {
+    top: Map<string, KeyWithImagePath | null>,
+    middle: Map<string, KeyWithImagePath | null>,
+    bottom: Map<string, KeyWithImagePath | null>
+  } = useMemo(() => {
+    // topRowの順番通りに変数に入れる、その際keydatasの中のkeyと一致するものを入れる
+    const top = new Map();
+    topRow.forEach((key) => {
+      const keyData = keyDatas.find(keyData => keyData.key === key);
+      if (keyData) {
+        top.set(key, keyData);
+      } else {
+        top.set(key, null);
+      }
+    });
+
+    const middle = new Map();
+    middleRow.forEach((key) => {
+      const keyData = keyDatas.find(keyData => keyData.key === key);
+      if (keyData) {
+        middle.set(key, keyData);
+      } else {
+        middle.set(key, null);
+      }
+    });
+
+    const bottom = new Map();
+    bottomRow.forEach((key) => {
+      const keyData = keyDatas.find(keyData => keyData.key === key);
+      if (keyData) {
+        bottom.set(key, keyData);
+      } else {
+        bottom.set(key, null);
+      }
+    });
+
+    return {
+      top,
+      middle,
+      bottom
+    };
+  }, [keyDatas]);
+
+  console.log(keyData);
+
+  return (
+    <div className="wrapper">
+      <div className="keyboard top">    
+        {
+          Array.from(keyData.top).map(([key, value]) => {
+            return (
+              <>
+                <button className="key" key={key}>
+                  {key}
+                  {
+                    value?.imageSrc && (
+                      <img src={value.imageSrc} alt={key} />
+                    )
+                  }
+                </button>
+                <div>
+                  {value?.title}
+                </div>
+              </>
+            );
+          })
+        }
+      </div>
+      <div className="keyboard middle">
+      {
+          Array.from(keyData.middle).map(([key, value]) => {
+            return (
+              <>
+                <button className="key" key={key}>
+                  {key}
+                  {
+                    value?.imageSrc && (
+                      <img src={value.imageSrc} alt={key} />
+                    )
+                  }
+                </button>
+                <div>
+                  {value?.title}
+                </div>
+              </>
+            );
+          })
+        }
+      </div>
+      <div className="keyboard bottom">
+      {
+          Array.from(keyData.bottom).map(([key, value]) => {
+            return (
+              <>
+                <button className="key" key={key}>
+                  {key}
+                  {
+                    value?.imagePath && (
+                      <img src={value.imagePath} alt={key} />
+                    )
+                  }
+                </button>
+                <div>
+                  {value?.title}
+                </div>
+              </>
+            );
+          })
+        }
+      </div>
+    </div>
+  );
+};
+
