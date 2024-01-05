@@ -9,12 +9,23 @@ import { paths } from "./cache";
 import { Key } from "../src-tauri/bindings/Key";
 import { appWindow } from "@tauri-apps/api/window";
 import { Config } from "../src-tauri/bindings/Config";
+import { enable, isEnabled } from "tauri-plugin-autostart-api";
 
 type KeyWithImagePath = Key & {
   imageSrc?: string | null;
 };
 
 function App() {
+
+  useEffect(() => {
+    (async () => {
+      const isEnabledResult = await isEnabled();
+      if (!isEnabledResult) {
+        await enable();
+      }
+      console.log(`registered for autostart? ${await isEnabled()}`);
+    })();
+  }, []);
 
   return (
     <div className="app-wrapper">

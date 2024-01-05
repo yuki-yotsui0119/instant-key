@@ -6,8 +6,9 @@ mod util;
 use util::{convert_all_app_icons_to_png, create_preferences_if_missing, get_all_config_data, execute_command};
 use window_vibrancy::apply_acrylic;
 use tauri::{
-    Manager, GlobalShortcutManager, WindowBuilder, Size, LogicalSize
+    Manager, GlobalShortcutManager, Size, LogicalSize
 };
+use tauri_plugin_autostart::MacosLauncher;
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
@@ -62,20 +63,22 @@ fn main() {
 
             Ok(())
         })
-        // .on_window_event(|event| match event.event() {
-        //     tauri::WindowEvent::Focused(is_focused) => {
-        //         // detect click outside of the focused window and hide the app
-        //         if !is_focused {
-        //             event.window().hide().unwrap();
-        //         }
-        //     }
-        //     _ => {}
-        // })
+        .on_window_event(|event| match event.event() {
+            tauri::WindowEvent::Focused(is_focused) => {
+                // detect click outside of the focused window and hide the app
+                if !is_focused {
+                    event.window().hide().unwrap();
+                }
+            }
+            _ => {}
+        })
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
             println!("{}, {argv:?}, {cwd}", app.package_info().name);
 
             app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
-        }))        .run(tauri::generate_context!())
+        }))
+        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec![])))
+        .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
