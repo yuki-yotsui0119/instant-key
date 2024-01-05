@@ -9,6 +9,12 @@ use tauri::{
     Manager, GlobalShortcutManager, WindowBuilder, Size, LogicalSize
 };
 
+#[derive(Clone, serde::Serialize)]
+struct Payload {
+  args: Vec<String>,
+  cwd: String,
+}
+
 fn main() {
     convert_all_app_icons_to_png();
     create_preferences_if_missing();
@@ -65,7 +71,11 @@ fn main() {
         //     }
         //     _ => {}
         // })
-        .run(tauri::generate_context!())
+        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
+            println!("{}, {argv:?}, {cwd}", app.package_info().name);
+
+            app.emit_all("single-instance", Payload { args: argv, cwd }).unwrap();
+        }))        .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 

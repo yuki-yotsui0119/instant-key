@@ -1,12 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import reactLogo from "./assets/react.svg";
+import { useEffect, useMemo, useState } from "react";
 import { convertFileSrc, invoke } from "@tauri-apps/api/tauri";
 import { readTextFile } from "@tauri-apps/api/fs";
 import { appDataDir, join } from "@tauri-apps/api/path";
 
 // css
 import "./App.scss";
-import { paths, preferences } from "./cache";
+import { paths } from "./cache";
 import { Key } from "../src-tauri/bindings/Key";
 import { appWindow } from "@tauri-apps/api/window";
 import { Config } from "../src-tauri/bindings/Config";
