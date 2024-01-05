@@ -56,7 +56,7 @@ pub fn create_preferences_if_missing() {
             fs::write(preferences_path, &preference_text).unwrap();
         }
         if !config_path.exists() {
-            let mut config = Config { keys: Vec::new() };
+            let config = Config { keys: Vec::new() };
             let config_text = serde_json::to_string(&config).unwrap();
             fs::write(config_path, &config_text).unwrap();
         }

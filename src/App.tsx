@@ -133,35 +133,44 @@ const Keyboard = () => {
   console.log(keyData);
 
   return (
+
     <div className="keyboard">
-      <div className="keyboadr-inner top">    
-      {
-          Array.from(keyData.top).map(([key, value]) => <KeyBody keyData={value} keyLabel={key} />)
-        }
-      </div>
-      <div className="keyboadr-inner middle">
-      {
-          Array.from(keyData.middle).map(([key, value]) => <KeyBody keyData={value} keyLabel={key} />)
-        }
-      </div>
-      <div className="keyboadr-inner bottom">
+      <div className="top row">
+        <div className="key tab flex-grow extra-key"><div>Tab</div></div>
         {
-          Array.from(keyData.bottom).map(([key, value]) => <KeyBody keyData={value} keyLabel={key} />)
+          Array.from(keyData.top).map(([key, value]) => <KeyBody3 keyData={value} keyLabel={key} />)
         }
+        <div className="key common extra-key">[</div>
+        <div className="key common extra-key">]</div>
+        <div className="key common extra-key">\</div>
+      </div>
+      <div className="middle row">
+        <div className="key caps-lock flex-grow extra-key"><div>Caps Lock</div></div>
+        {
+          Array.from(keyData.middle).map(([key, value]) => <KeyBody3 keyData={value} keyLabel={key} />)
+        }
+        <div className="key common extra-key">;</div>
+        <div className="key common extra-key">'</div>
+        <div className="key return flex-grow extra-key"><div>Return</div></div>
+      </div>
+      <div className="bottom row">
+        <div className="key shift flex-grow extra-key"><div>Shift</div></div>
+        {
+          Array.from(keyData.bottom).map(([key, value]) => <KeyBody3 keyData={value} keyLabel={key} />)
+        }
+        <div className="key common extra-key">,</div>
+        <div className="key common extra-key">{"."}</div>
+        <div className="key common extra-key">/</div>
+        <div className="key shift flex-grow extra-key"><div>Shift</div></div>
       </div>
     </div>
   );
 };
 
-type KeyProps = {
-  keyLabel: string;
-  keyData: KeyWithImagePath | null
-}
-
-const KeyBody = ({ keyLabel, keyData }: KeyProps) => {
+const KeyBody3 = ({ keyLabel, keyData }: KeyProps) => {
   return (
-    <div>
-      <div className="key">
+    <div className="add-image common">
+      <div className="key add-image-wrapper">
         <div className="key-cotnent">
           <div className="key-label">
             {keyLabel}
@@ -179,4 +188,10 @@ const KeyBody = ({ keyLabel, keyData }: KeyProps) => {
     </div>
   )
 
+}
+
+
+type KeyProps = {
+  keyLabel: string;
+  keyData: KeyWithImagePath | null
 }

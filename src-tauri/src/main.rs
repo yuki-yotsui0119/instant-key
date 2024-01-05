@@ -6,7 +6,7 @@ mod util;
 use util::{convert_all_app_icons_to_png, create_preferences_if_missing, get_all_config_data, execute_command};
 use window_vibrancy::apply_acrylic;
 use tauri::{
-    Manager, GlobalShortcutManager
+    Manager, GlobalShortcutManager, WindowBuilder, Size, LogicalSize
 };
 
 fn main() {
@@ -17,19 +17,27 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             get_all_config_data,
             execute_command,
-            // open_command,
-            // get_icon,
-            // handle_input,
-            // launch_on_login,
-            // ns_panel::init_ns_panel,
-            // ns_panel::show_app,
-            // ns_panel::hide_app
         ])
         .setup(|app| {
             // app.set_activation_policy(tauri::ActivationPolicy::Accessory);
             let window = app.get_window("main").unwrap();
+
+
+           // Retrieve the primary monitor's scale factor
+           let primary_monitor = window.primary_monitor().unwrap().unwrap();
+           let monitor_scale_factor = primary_monitor.scale_factor();
+           let monitor_size = primary_monitor.size();
+
+           // Calculate 70% of the current screen size
+           let width = monitor_size.width as f64 * 0.8 / monitor_scale_factor;
+           let height = monitor_size.height as f64 * 0.7 / monitor_scale_factor;
+
+           // Set the main window size
+           window.set_size(Size::Logical(LogicalSize::new(width, height))).unwrap();
+
             #[cfg(target_os = "windows")]
             apply_acrylic(&window, Some((18, 18, 18, 125))).expect("Unsupported platform! 'apply_blur' is only supported on Windows");
+
             window.hide().unwrap();
             window.center().unwrap();
 
